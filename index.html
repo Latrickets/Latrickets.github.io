@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+    <canvas id="cuadro" width="750px" height="650px">
+
+    </canvas>
+    
+    <script src="gif.js"></script>
+    <script type="text/javascript">    
+        var canvas = null;
+        var ctx = null;
+        var pressed = false;
+        var player1 = null;
+        var paredes = [];
+        var direccion = '';
+        var score = 0;
+        var speed = 3;
+        var pause = false;
+        var bomberman = new Image;
+        var sound = new Audio;
+        var sound2 = new Audio;
+        var bomba = null;
+        var gifBomba = GIF();
+        var bomb = false;
+        var explo = false;
+        var explosion = [];
+        var imgExplosion = new Image;
+        var tiempo = 0;
+        var vidas = 1;
+        var piso = new Image;
+        var pisos = [];
+        var bloques = [];
+        var bloque = new Image;
+        var muritos = [];
+        var muro = new Image;
+        var contador = 0;
+        var bgAudio = new Audio("bomberman-sound.mp3");
+        var expAudio = new Audio("explosion-bomba.mp3");
+        var winAudio = new Audio("ganador.mp3");
+        var loseAudio = new Audio("perder.mp3");
+        var start = true;
+
+
+
+        function generateRandomColor() {
+            var trans = '0.5'; // 50% transparency
+            var color = 'rgba(';
+            for (var i = 0; i < 3; i++) {
+                color += Math.floor(Math.random() * 255) + ',';
+            }
+            color += trans + ')'; // add the transparency
+            return color;
+        }
+        function getRandomInt(max) {
+             return Math.floor(Math.random() * max);
+        }
+        
+        function run(){
+            canvas = document.getElementById('cuadro');
+            ctx = canvas.getContext('2d');
+
+            player1 = new Cuadro(40, 40, 40, 40, "green");
+            bomba = new Cuadro(100, 200, 40, 40, "green");
+            let tamanio = 0;
+            let altura = 0;
+            for(let i = 0; i < 13; i++) {
+                for (let j = 0; j < 15; j++) {
+                    pisos.push(new Cuadro(tamanio, altura, 40, 40, "gray"));
+                    tamanio += 50;
+                }
+                altura += 50;
+                tamanio = 0;
+            }
+            //paredes.push(new Cuadro(0, 0, 40, 700, "gray"));
+            //paredes.push(new Cuadro(40, 0, 940, 40, "gray"));
+            //paredes.push(new Cuadro(690, 0, 40, 700, "gray"));
+            //paredes.push(new Cuadro(40,590, 940, 40, "gray"));
+
+            
+            for(let i = 0; i < 3; i++){
+                muritos.push(new Cuadro((100 + i*50),100, 40, 40, "gray"))
+                muritos.push(new Cuadro((500 + i*50),100, 40, 40, "gray"))
+                muritos.push(new Cuadro((200 + i*50),200, 40, 40, "gray"))
+                muritos.push(new Cuadro((400 + i*50),200, 40, 40, "gray"))
+                muritos.push(new Cuadro((100 + i*50),500, 40, 40, "gray"))
+            }
+            for(let i = 0; i < 2; i++){
+                //horizontal
+                muritos.push(new Cuadro((300 + (i*100)),100, 40, 40, "gray"))
+                muritos.push(new Cuadro((300 + (i*100)),300, 40, 40, "gray"))
+                muritos.push(new Cuadro((300 + (i*100)),400, 40, 40, "gray"))
+                muritos.push(new Cuadro((300 + (i*100)),500, 40, 40, "gray"))
+                muritos.push(new Cuadro((500 + (i*100)),500, 40, 40, "gray"))
+
+                //vertical
+                muritos.push(new Cuadro(100,(150 + (i*50)), 40, 40, "gray"))
+                muritos.push(new Cuadro(600,(150 + (i*50)), 40, 40, "gray"))
+                muritos.push(new Cuadro(200,(250 + (i*50)), 40, 40, "gray"))
+                
+                muritos.push(new Cuadro(500,(250 + (i*50)), 40, 40, "gray"))
+            }
+            for(let i = 0; i < 4; i++){
+                muritos.push(new Cuadro(100,(300 + (i*50)), 40, 40, "gray"))
+                muritos.push(new Cuadro((500 + (i*50)),400, 40, 40, "gray"))
+            }
+            for(let i = 0; i < 15; i++){
+                muritos.push(new Cuadro(0,(0 + (i*50)), 40, 40, "gray"))
+                muritos.push(new Cuadro((0 + (i*50)),0, 40, 40, "gray"))
+                muritos.push(new Cuadro(700,(0 + (i*50)), 40, 40, "gray"))
+                muritos.push(new Cuadro((0 + (i*50)), 600, 40, 40, "gray"))
+            }
+            muritos.push(new Cuadro(200, 400, 40, 40, "gray"));
+            muritos.push(new Cuadro(600, 300, 40, 40, "gray"));
+            
+            bloques.push(new Cuadro(200,50, 40, 40, "gray"));
+            bloques.push(new Cuadro(300,50, 40, 40, "gray"));
+            bloques.push(new Cuadro(350,50, 40, 40, "gray"));
+            bloques.push(new Cuadro(450,50, 40, 40, "gray"));
+
+            bloques.push(new Cuadro(250,100, 40, 40, "gray"));
+            bloques.push(new Cuadro(350,100, 40, 40, "gray"));
+
+            bloques.push(new Cuadro(50, 150, 40, 40, "gray"));
+            bloques.push(new Cuadro(650, 150, 40, 40, "gray"));
+            bloques.push(new Cuadro(50, 200, 40, 40, "gray"));
+            bloques.push(new Cuadro(650, 200, 40, 40, "gray"));
+
+            bloques.push(new Cuadro(300, 250, 40, 40, "gray"));
+            bloques.push(new Cuadro(400, 250, 40, 40, "gray"));
+            bloques.push(new Cuadro(550, 250, 40, 40, "gray"));
+            bloques.push(new Cuadro(600, 250, 40, 40, "gray"));
+
+            bloques.push(new Cuadro(50, 300, 40, 40, "gray"));
+            bloques.push(new Cuadro(150, 300, 40, 40, "gray"));
+            bloques.push(new Cuadro(250, 300, 40, 40, "gray"));
+            bloques.push(new Cuadro(650, 300, 40, 40, "gray"));
+
+            bloques.push(new Cuadro(50, 350, 40, 40, "gray"));
+            bloques.push(new Cuadro(150, 350, 40, 40, "gray"));
+            bloques.push(new Cuadro(200, 350, 40, 40, "gray"));
+            bloques.push(new Cuadro(300, 350, 40, 40, "gray"));
+            bloques.push(new Cuadro(400, 350, 40, 40, "gray"));
+
+            bloques.push(new Cuadro(150, 400, 40, 40, "gray"));
+            bloques.push(new Cuadro(450, 400, 40, 40, "gray"));
+
+            bloques.push(new Cuadro(300, 450, 40, 40, "gray"));
+            bloques.push(new Cuadro(400, 450, 40, 40, "gray"));
+            bloques.push(new Cuadro(500, 450, 40, 40, "gray"));
+            bloques.push(new Cuadro(600, 450, 40, 40, "gray"));
+
+            bloques.push(new Cuadro(250, 500, 40, 40, "gray"));
+            bloques.push(new Cuadro(450, 500, 40, 40, "gray"));
+            bloques.push(new Cuadro(550, 500, 40, 40, "gray"));
+            
+            
+            
+
+            //explosion.push(new Image())
+            
+            //explosion.push(new Cuadro(100, 50, 40, 40, "green"));
+            bomberman.src = 'pj1/bombermanFrente.png';
+            imgExplosion.src = 'explosion.png';
+            muro.src = 'murito.png';
+            bloque.src = 'bloque.png';
+            piso.src = 'pisito.png';
+
+            gifBomba.load('NeoBigBomb.gif');
+            
+
+            //sound.src = 'coin.mp3';
+            sound2.src = 'pause.mp3';
+            console.log(pisos)
+            console.log(paredes);
+            console.log(bloques);
+            
+            paint();
+        }
+        function paint(){
+
+            window.requestAnimationFrame(paint);
+
+            ctx.fillStyle = '#ADD8E6';
+            ctx.fillRect(0,0, 1000, 900);
+            ctx.fillStyle = 'green';
+            ctx.font = '25px serif';
+            ctx.fillText('Score: ' + score, 40,40);
+            for (let i = 0; i < pisos.length; i++) {
+                ctx.drawImage(piso,pisos[i].x, pisos[i].y);
+                /*if((pisos[i].y == 0) || (pisos[i].x == 0) || (pisos[i].x == 700) || (pisos[i].y == 600)){
+                    ctx.drawImage(muro,pisos[i].x, pisos[i].y);
+                }*/
+            }
+            for (let i = 0; i < muritos.length; i++) {
+                ctx.drawImage(muro,muritos[i].x, muritos[i].y);
+            }
+            for (let i = 0; i < bloques.length; i++) {
+                ctx.drawImage(bloque,bloques[i].x, bloques[i].y);
+            }
+
+            //player1.pintar(ctx);
+            if(vidas > 0){
+                ctx.drawImage(bomberman,player1.x, player1.y);
+            }
+            
+            if(bomb == true){
+                tiempo++;
+                if(tiempo > 200){
+                    console.log(tiempo);
+                    explo = true
+                    bomb = false;
+                    tiempo = 0;
+                    explosion = [];
+                    explosion.push(new Cuadro(bomba.x, bomba.y, 40, 40, "green"));
+                    explosion.push(new Cuadro(bomba.x+40, bomba.y, 40, 40, "green"));
+                    explosion.push(new Cuadro(bomba.x-40, bomba.y, 40, 40, "green"));
+                    explosion.push(new Cuadro(bomba.x, bomba.y+40, 40, 40, "green"));
+                    explosion.push(new Cuadro(bomba.x, bomba.y-40, 40, 40, "green"));
+                }
+                ctx.drawImage(gifBomba.image, bomba.x, bomba.y);
+                //ctx.drawImage(gifBomba,bomba.x,bomba.y);
+            }
+            if(explo){
+                if(tiempo > 30){
+                    explo = false;
+                }
+                /*ctx.drawImage(imgExplosion, bomba.x, bomba.y);
+                ctx.drawImage(imgExplosion, bomba.x+40, bomba.y);
+                ctx.drawImage(imgExplosion, bomba.x-40, bomba.y);
+                ctx.drawImage(imgExplosion, bomba.x, bomba.y+40);
+                ctx.drawImage(imgExplosion, bomba.x, bomba.y-40);
+                */
+                for(let i = 0; i < explosion.length; i++){
+                ctx.drawImage(imgExplosion,explosion[i].x,explosion[i].y);
+                    for(let j = 0; j < bloques.length; j++){
+                        if(explosion[i].se_tocan(bloques[j])){
+                            bloques[j].x = 999;
+                            bloques[j].y = 999;
+                            contador += 1
+                            console.log(contador);
+                        }
+                    }
+                    if(explosion[i].se_tocan(player1)){
+                        vidas--;
+                        console.log('perdiste');
+                    }
+                    
+                }
+                expAudio.play();
+                tiempo++;
+            }
+
+            /*for (let index = 0; index < 50; index++) {
+                paredes[index].pintar(ctx);
+            }*/
+            
+            if (pause) {
+                ctx.fillStyle = 'rgba(144,238,144,0.7)';
+                ctx.fillRect(0,0, 1000, 900);
+                ctx.font = '50px serif';
+                ctx.fillStyle = 'rgb(0,0,0)';
+                ctx.fillText('Pause', 200, 200);
+                sound2.play();
+
+            }else if(vidas < 1){
+                ctx.fillStyle = 'rgba(144,238,144,0.7)';
+                ctx.fillRect(0,0, 1000, 900);
+                ctx.font = '50px serif';
+                ctx.fillStyle = 'rgb(0,0,0)';
+                ctx.fillText('P E R D I S T E', 200, 250);
+                loseAudio.play();
+            }else if(contador >= 32){
+                ctx.fillStyle = 'rgba(144,238,144,0.7)';
+                ctx.fillRect(0,0, 1000, 900);
+                ctx.font = '50px serif';
+                ctx.fillStyle = 'rgb(0,0,0)';
+                ctx.fillText('G A N A S T E', 200, 250);
+                winAudio.play();
+            }else if(start){
+                ctx.fillStyle = 'rgba(144,238,144,0.7)';
+                ctx.fillRect(0,0, 1000, 900);
+                ctx.font = '50px serif';
+                ctx.fillStyle = 'rgb(0,0,0)';
+                ctx.fillText('Presiona enter para comenzar', 100, 250);
+            }else{
+                update();
+                
+            }
+
+        }
+        function update(){
+            //cambio de direccion
+            if(direccion == "up"){
+                player1.y -= speed;
+                bomberman.src = 'pj1/bombermanEspalda.png';
+                if (player1.y < 0) {
+                    player1.y = 900;
+                }
+            }
+            if (direccion == "down"){
+                player1.y += speed;
+                bomberman.src = 'pj1/bombermanFrente.png';
+                if (player1.y > 900) {
+                    player1.y = 0;
+                }
+            }
+            if (direccion == "left") {
+                player1.x -= speed;
+                bomberman.src = 'pj1/bombermanladoIzq.png';
+                if (player1.x < 0) {
+                    player1.x = 1000;
+                }
+            }
+            if (direccion == "right") {
+                player1.x += speed;
+                bomberman.src = 'pj1/bombermanladoDer.png';
+                if (player1.x > 1000) {
+                    player1.x = 0;
+                }
+            }
+            
+            //colision con paredes
+            for (let index = 0; index < paredes.length; index++) {
+                
+                if (player1.se_tocan(paredes[index])) {
+                    if(direccion == "up"){
+                        player1.y += speed;
+                    }
+                    if (direccion == "down"){
+                        player1.y -= speed;
+                        
+                    }
+                    if (direccion == "left") {
+                        player1.x += speed;
+                        
+                    }
+                    if (direccion == "right") {
+                        player1.x -= speed;
+                    }
+                }
+            }
+            //colision con muros
+            for (let i = 0; i < muritos.length; i++) {
+                if (player1.se_tocan(muritos[i])) {
+                    if(direccion == "up"){
+                        player1.y += speed;
+                    }
+                    if (direccion == "down"){
+                        player1.y -= speed;
+                        
+                    }
+                    if (direccion == "left") {
+                        player1.x += speed;
+                        
+                    }
+                    if (direccion == "right") {
+                        player1.x -= speed;
+                    }
+                }
+            }
+            //colision con bloques
+            for (let index = 0; index < bloques.length; index++) {
+                
+                if (player1.se_tocan(bloques[index])) {
+                    if(direccion == "up"){
+                        player1.y += speed;
+                    }
+                    if (direccion == "down"){
+                        player1.y -= speed;
+                        
+                    }
+                    if (direccion == "left") {
+                        player1.x += speed;
+                        
+                    }
+                    if (direccion == "right") {
+                        player1.x -= speed;
+                    }
+                }
+            }
+            //console.log(tiempo);
+
+        }
+        //objeto base para paredes
+        function Cuadro(x, y, w, h , c){
+            this.x = x;
+            this.y = y;
+            this.w = w;
+            this.h = h;
+            this.c = c;
+            this.pintar = function(ctx){
+                ctx.fillStyle = this.c;
+                ctx.fillRect(this.x, this.y, this.w, this.h);
+                ctx.strokeRect(this.x, this.y, this.w, this.h);
+            }
+            this.se_tocan = function (target) { 
+            if(this.x < target.x + target.w &&
+                this.x + this.w > target.x && 
+                this.y < target.y + target.h && 
+                this.y + this.h > target.y){
+                    
+                    return true;
+                }
+            };
+        }
+
+        window.requestAnimationFrame = (function () {
+            return window.requestAnimationFrame ||
+            window.webkitRequestAnimationFrame ||
+            window.mozRequestAnimationFrame ||
+            function (callback) {
+                window.setTimeout(callback, 17);
+            };
+        }());
+
+        //eventos de teclado
+        document.addEventListener('keydown', function(e){
+            //arriba
+            if (e.keyCode == '38') {
+                //super_y -= 10;
+                direccion = 'up';
+                console.log('up');
+            }
+            //abajo
+            if (e.keyCode == '40') {
+                //super_y +=10;
+                direccion = 'down';
+                console.log('down');
+                
+            }
+            //izquierda
+            if (e.keyCode == '37') {
+                //super_x -= 10;
+                direccion = 'left';
+                console.log('left');
+            }
+            //derecha
+            if (e.keyCode == '39') {
+                //super_x += 10;
+                direccion = 'right';
+                console.log('right');
+            }
+            if (e.keyCode == '80') {
+                pause = (pause) ? false : true;
+            }
+            if(!pause && !start && vidas > 0 ){
+                if (e.keyCode == '32') {
+                    console.log(vidas);
+                    if (bomb == false && explo == false){
+                        bomb = true;
+                        bomba.x = player1.x;
+                        bomba.y = player1.y;
+                        tiempo = 0;
+                    }    
+                }
+            }
+            if (e.keyCode == '13') {
+                start = (start) ? false : true;
+                bgAudio.play();
+            }
+            
+        });
+
+
+        window.addEventListener("load", run, false);
+
+        
+
+       
+
+    </script>
+</body>
+</html>
