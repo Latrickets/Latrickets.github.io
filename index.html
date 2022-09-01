@@ -7,8 +7,7 @@
     <title>Document</title>
 </head>
 <body>
-    
-    <canvas id="cuadro" width="750px" height="650px">
+    <canvas id="cuadro" width="750px" height="700px">
 
     </canvas>
     
@@ -46,9 +45,26 @@
         var winAudio = new Audio("ganador.mp3");
         var loseAudio = new Audio("perder.mp3");
         var start = true;
+        var seconds = 00;
+        var minutes = 00;
+        var interval;
 
 
-
+        function startTime(){
+            clearInterval(interval);
+            interval = setInterval(startTimer, 1000);
+        }
+        function stopTimer(){
+            clearInterval(interval);
+        }
+        function startTimer(){
+            seconds++;
+            if(seconds > 59){
+                minutes++;
+                seconds = 0;
+            }
+            console.log(seconds);
+        }
         function generateRandomColor() {
             var trans = '0.5'; // 50% transparency
             var color = 'rgba(';
@@ -257,38 +273,52 @@
                 tiempo++;
             }
 
+
+
             /*for (let index = 0; index < 50; index++) {
                 paredes[index].pintar(ctx);
             }*/
-            
-            if (pause) {
-                ctx.fillStyle = 'rgba(144,238,144,0.7)';
-                ctx.fillRect(0,0, 1000, 900);
+                ctx.fillStyle = 'rgba(255,255,255,1)';
+                ctx.fillRect(0,650, 750, 50);
                 ctx.font = '50px serif';
                 ctx.fillStyle = 'rgb(0,0,0)';
-                ctx.fillText('Pause', 200, 200);
-                sound2.play();
+                ctx.fillText('Tiempo: '+minutes + " :" + seconds, 200, 690);
 
-            }else if(vidas < 1){
-                ctx.fillStyle = 'rgba(144,238,144,0.7)';
+            if (pause) {
+                ctx.fillStyle = 'rgba(103,92,176,0.8)';
                 ctx.fillRect(0,0, 1000, 900);
                 ctx.font = '50px serif';
-                ctx.fillStyle = 'rgb(0,0,0)';
-                ctx.fillText('P E R D I S T E', 200, 250);
+                ctx.fillStyle = 'rgb(255,255,255)';
+                ctx.fillText('P A U S E', 250, 300);
+                sound2.play();
+            }else if(vidas < 1){
+                ctx.fillStyle = 'rgba(34,28,102,0.7)';
+                ctx.fillRect(0,0, 1000, 900);
+                ctx.font = '50px serif';
+                ctx.fillStyle = 'rgb(255,255,255)';
+                ctx.fillText('P E R D I S T E', 200, 300);
                 loseAudio.play();
             }else if(contador >= 32){
                 ctx.fillStyle = 'rgba(144,238,144,0.7)';
                 ctx.fillRect(0,0, 1000, 900);
                 ctx.font = '50px serif';
-                ctx.fillStyle = 'rgb(0,0,0)';
-                ctx.fillText('G A N A S T E', 200, 250);
+                ctx.fillStyle = 'rgb(255,255,255)';
+                ctx.fillText('G A N A S T E', 200, 300);
                 winAudio.play();
             }else if(start){
-                ctx.fillStyle = 'rgba(144,238,144,0.7)';
+                ctx.fillStyle = 'rgba(34,28,102,0.7)';
                 ctx.fillRect(0,0, 1000, 900);
                 ctx.font = '50px serif';
-                ctx.fillStyle = 'rgb(0,0,0)';
+                ctx.fillStyle = 'rgb(255,255,255)';
                 ctx.fillText('Presiona enter para comenzar', 100, 250);
+                ctx.font = '30px serif';
+                ctx.fillStyle = 'rgb(255,255,255)';
+                ctx.fillText('space => Poner bomba', 200, 300);
+                ctx.fillText('  ↑     => Arriba', 200, 340);
+                ctx.fillText('  ↓     => Abajo', 200, 380);
+                ctx.fillText('  ←   => Izquierda', 200, 420);
+                ctx.fillText('  →   => Derecha', 200, 460);
+                
             }else{
                 update();
                 
@@ -449,6 +479,11 @@
             }
             if (e.keyCode == '80') {
                 pause = (pause) ? false : true;
+                if (pause){
+                    stopTimer();
+                }else{
+                    startTime();
+                }
             }
             if(!pause && !start && vidas > 0 ){
                 if (e.keyCode == '32') {
@@ -458,22 +493,21 @@
                         bomba.x = player1.x;
                         bomba.y = player1.y;
                         tiempo = 0;
-                    }    
+                    }
                 }
             }
             if (e.keyCode == '13') {
                 start = (start) ? false : true;
                 bgAudio.play();
+                if(start){
+                    stopTimer();
+                }else{
+                    startTime();
+                }
             }
             
         });
-
-
         window.addEventListener("load", run, false);
-
-        
-
-       
 
     </script>
 </body>
